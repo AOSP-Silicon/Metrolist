@@ -6,7 +6,6 @@ import com.metrolist.innertube.models.ArtistItem
 import com.metrolist.innertube.models.PlaylistItem
 import com.metrolist.innertube.models.SongItem
 import com.metrolist.innertube.utils.completed
-import com.metrolist.innertube.utils.completedLibraryPage
 import com.metrolist.music.db.MusicDatabase
 import com.metrolist.music.db.entities.ArtistEntity
 import com.metrolist.music.db.entities.PlaylistEntity
@@ -58,7 +57,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLikedSongs.compareAndSet(expect = false, update = true)) return
 
         try {
-            YouTube.playlist("LM").completedLibraryPage().onSuccess { page ->
+            YouTube.playlist("LM").completed().onSuccess { page ->
                 val songs = page.songs.reversed()
 
                 database.likedSongsByNameAsc().first()
@@ -88,7 +87,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLibrarySongs.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos")
+            val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
 
             database.songsByNameAsc().first()
                 .filterNot { it.id in remoteSongs.map(SongItem::id) }
@@ -116,7 +115,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLikedAlbums.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums")
+            val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums", "FEmusic_library_privately_owned_releases")
 
             database.albumsLikedByNameAsc().first()
                 .filterNot { it.id in remoteAlbums.map(AlbumItem::id) }
@@ -150,7 +149,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingArtistsSubscriptions.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists")
+            val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists", "FEmusic_library_privately_owned_artists")
 
             database.artistsBookmarkedByNameAsc().first()
                 .filterNot { it.id in remoteArtists.map(ArtistItem::id) }
@@ -189,7 +188,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingSavedPlaylists.compareAndSet(expect = false, update = true)) return
 
         try {
-            YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess { page ->
+            YouTube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
                 val playlistList = page.items.filterIsInstance<PlaylistItem>()
                     .filterNot { it.id == "LM" || it.id == "SE" }
                     .reversed()
@@ -230,21 +229,24 @@ class SyncUtils @Inject constructor(
     }
 
     suspend fun syncPlaylist(browseId: String, playlistId: String) {
-        YouTube.playlist(browseId).completedLibraryPage().onSuccess { playlistPage ->
+        YouTube.playlist(browseId).completed().onSuccess { playlistPage ->
             coroutineScope {
                 launch(Dispatchers.IO) {
                     database.transaction {
                         clearPlaylist(playlistId)
                         val songEntities = playlistPage.songs
                             .map(SongItem::toMediaMetadata)
+                            .onEach { insert(it) }
 
                         val playlistSongMaps = songEntities.mapIndexed { position, song ->
                             PlaylistSongMap(
                                 songId = song.id,
                                 playlistId = playlistId,
                                 position = position,
+                                setVideoId = song.setVideoId
                             )
                         }
+                        playlistSongMaps.forEach { insert(it) }
                     }
                 }
             }
@@ -255,7 +257,7 @@ class SyncUtils @Inject constructor(
         val remote = mutableListOf<T>()
         coroutineScope {
             val fetchJob = async {
-                YouTube.library(libraryId).completedLibraryPage().onSuccess { page ->
+                YouTube.library(libraryId).completed().onSuccess { page ->
                     val data = page.items.filterIsInstance<T>().reversed()
                     synchronized(remote) { remote.addAll(data) }
                 }
