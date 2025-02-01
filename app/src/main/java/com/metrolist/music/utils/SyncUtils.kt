@@ -230,7 +230,7 @@ class SyncUtils @Inject constructor(
     }
 
     suspend fun syncPlaylist(browseId: String, playlistId: String) {
-        YouTube.playlist(browseId).completed().onSuccess { playlistPage ->
+        YouTube.playlist(browseId).completedLibraryPage().onSuccess { playlistPage ->
             coroutineScope {
                 launch(Dispatchers.IO) {
                     database.transaction {
@@ -258,7 +258,7 @@ class SyncUtils @Inject constructor(
         val remote = mutableListOf<T>()
         coroutineScope {
             val fetchJob = async {
-                YouTube.library(libraryId).completed().onSuccess { page ->
+                YouTube.library(libraryId).completedLibraryPage().onSuccess { page ->
                     val data = page.items.filterIsInstance<T>().reversed()
                     synchronized(remote) { remote.addAll(data) }
                 }
