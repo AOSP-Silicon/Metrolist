@@ -87,7 +87,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLibrarySongs.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
+            val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos")
 
             database.songsByNameAsc().first()
                 .filterNot { it.id in remoteSongs.map(SongItem::id) }
@@ -115,7 +115,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLikedAlbums.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums", "FEmusic_library_privately_owned_releases")
+            val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums")
 
             database.albumsLikedByNameAsc().first()
                 .filterNot { it.id in remoteAlbums.map(AlbumItem::id) }
@@ -149,7 +149,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingArtistsSubscriptions.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists", "FEmusic_library_privately_owned_artists")
+            val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists")
 
             database.artistsBookmarkedByNameAsc().first()
                 .filterNot { it.id in remoteArtists.map(ArtistItem::id) }
