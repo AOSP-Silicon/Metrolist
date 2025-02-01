@@ -58,7 +58,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLikedSongs.compareAndSet(expect = false, update = true)) return
 
         try {
-            YouTube.playlist("LM").completed().onSuccess { page ->
+            YouTube.playlist("LM").completedLibraryPage().onSuccess { page ->
                 val songs = page.songs.reversed()
 
                 database.likedSongsByNameAsc().first()
@@ -189,7 +189,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingSavedPlaylists.compareAndSet(expect = false, update = true)) return
 
         try {
-            YouTube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
+            YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess { page ->
                 val playlistList = page.items.filterIsInstance<PlaylistItem>()
                     .filterNot { it.id == "LM" || it.id == "SE" }
                     .reversed()
