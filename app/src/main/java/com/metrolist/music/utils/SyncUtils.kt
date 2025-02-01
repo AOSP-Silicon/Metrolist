@@ -1,6 +1,5 @@
 package com.metrolist.music.utils
 
-import android.content.Context
 import com.metrolist.innertube.YouTube
 import com.metrolist.innertube.models.AlbumItem
 import com.metrolist.innertube.models.ArtistItem
@@ -14,8 +13,6 @@ import com.metrolist.music.db.entities.PlaylistEntity
 import com.metrolist.music.db.entities.PlaylistSongMap
 import com.metrolist.music.db.entities.SongEntity
 import com.metrolist.music.models.toMediaMetadata
-import com.metrolist.music.playback.DownloadUtil
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -33,9 +30,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SyncUtils @Inject constructor(
-    val database: MusicDatabase,
-    private val downloadUtil: DownloadUtil,
-    @ApplicationContext private val context: Context
+    val database: MusicDatabase
 ) {
     private val _isSyncingLikedSongs = MutableStateFlow(false)
     private val _isSyncingLibrarySongs = MutableStateFlow(false)
@@ -84,9 +79,6 @@ class SyncUtils @Inject constructor(
                     }
                 }
             }
-
-            val songs = database.likedSongsNotDownloaded().first().map { it.song }
-            downloadUtil.autoDownloadIfLiked(songs)
         } finally {
             _isSyncingLikedSongs.value = false
         }
@@ -96,7 +88,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLibrarySongs.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
+            val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos")
 
             database.songsByNameAsc().first()
                 .filterNot { it.id in remoteSongs.map(SongItem::id) }
@@ -124,7 +116,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingLikedAlbums.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums", "FEmusic_library_privately_owned_releases")
+            val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums")
 
             database.albumsLikedByNameAsc().first()
                 .filterNot { it.id in remoteAlbums.map(AlbumItem::id) }
@@ -158,7 +150,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingArtistsSubscriptions.compareAndSet(expect = false, update = true)) return
 
         try {
-            val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists", "FEmusic_library_privately_owned_artists")
+            val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists")
 
             database.artistsBookmarkedByNameAsc().first()
                 .filterNot { it.id in remoteArtists.map(ArtistItem::id) }
@@ -197,7 +189,7 @@ class SyncUtils @Inject constructor(
         if (!_isSyncingSavedPlaylists.compareAndSet(expect = false, update = true)) return
 
         try {
-            YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess { page ->
+            YouTube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
                 val playlistList = page.items.filterIsInstance<PlaylistItem>()
                     .filterNot { it.id == "LM" || it.id == "SE" }
                     .reversed()
@@ -262,25 +254,17 @@ class SyncUtils @Inject constructor(
         }
     }
 
-    private suspend inline fun <reified T> getRemoteData(libraryId: String, uploadsId: String): MutableList<T> {
-        val browseIds = mapOf(
-            libraryId to 0,
-            uploadsId to 1
-        )
-
+    private suspend inline fun <reified T> getRemoteData(libraryId: String): MutableList<T> {
         val remote = mutableListOf<T>()
         coroutineScope {
-            val fetchJobs = browseIds.map { (browseId, tab) ->
-                async {
-                    YouTube.library(browseId, tab).completed().onSuccess { page ->
-                        val data = page.items.filterIsInstance<T>().reversed()
-                        synchronized(remote) { remote.addAll(data) }
-                    }
+            val fetchJob = async {
+                YouTube.library(libraryId).completed().onSuccess { page ->
+                    val data = page.items.filterIsInstance<T>().reversed()
+                    synchronized(remote) { remote.addAll(data) }
                 }
             }
-            fetchJobs.awaitAll()
+            fetchJob.await()
         }
-
         return remote
     }
 }
