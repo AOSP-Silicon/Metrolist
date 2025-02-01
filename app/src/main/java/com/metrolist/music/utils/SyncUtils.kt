@@ -237,17 +237,14 @@ class SyncUtils @Inject constructor(
                         clearPlaylist(playlistId)
                         val songEntities = playlistPage.songs
                             .map(SongItem::toMediaMetadata)
-                            .onEach { insert(it) }
 
                         val playlistSongMaps = songEntities.mapIndexed { position, song ->
                             PlaylistSongMap(
                                 songId = song.id,
                                 playlistId = playlistId,
                                 position = position,
-                                setVideoId = song.setVideoId
                             )
                         }
-                        playlistSongMaps.forEach { insert(it) }
                     }
                 }
             }
