@@ -171,7 +171,7 @@ fun AutoPlaylistScreen(
     LaunchedEffect(Unit) {
         if (ytmSync) {
             withContext(Dispatchers.IO) {
-                if (playlistType == PlaylistType.LIKE) viewModel.syncLikedSongs()
+                if (playlistId == "liked") syncUtils.syncRemoteLikedSongs()
             }
         }
     }
