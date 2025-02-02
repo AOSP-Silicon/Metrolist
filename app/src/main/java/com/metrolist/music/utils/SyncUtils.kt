@@ -31,17 +31,17 @@ import javax.inject.Singleton
 class SyncUtils @Inject constructor(
     val database: MusicDatabase
 ) {
-    private val _isSyncingLikedSongs = MutableStateFlow(false)
-    private val _isSyncingLibrarySongs = MutableStateFlow(false)
-    private val _isSyncingLikedAlbums = MutableStateFlow(false)
-    private val _isSyncingArtistsSubscriptions = MutableStateFlow(false)
-    private val _isSyncingSavedPlaylists = MutableStateFlow(false)
+    private val _isSyncingRemoteLikedSongs = MutableStateFlow(false)
+    private val _isSyncingRemoteSongs = MutableStateFlow(false)
+    private val _isSyncingRemoteAlbums = MutableStateFlow(false)
+    private val _isSyncingRemoteArtists = MutableStateFlow(false)
+    private val _isSyncingRemotePlaylists = MutableStateFlow(false)
 
-    val isSyncingLikedSongs: StateFlow<Boolean> = _isSyncingLikedSongs.asStateFlow()
-    val isSyncingLibrarySongs: StateFlow<Boolean> = _isSyncingLibrarySongs.asStateFlow()
-    val isSyncingLikedAlbums: StateFlow<Boolean> = _isSyncingLikedAlbums.asStateFlow()
-    val isSyncingArtistsSubscriptions: StateFlow<Boolean> = _isSyncingArtistsSubscriptions.asStateFlow()
-    val isSyncingSavedPlaylists: StateFlow<Boolean> = _isSyncingSavedPlaylists.asStateFlow()
+    val isSyncingRemoteLikedSongs: StateFlow<Boolean> = _isSyncingRemoteLikedSongs.asStateFlow()
+    val isSyncingRemoteSongs: StateFlow<Boolean> = _isSyncingRemoteSongs.asStateFlow()
+    val isSyncingRemoteAlbums: StateFlow<Boolean> = _isSyncingRemoteAlbums.asStateFlow()
+    val isSyncingRemoteArtists: StateFlow<Boolean> = _isSyncingRemoteArtists.asStateFlow()
+    val isSyncingRemotePlaylists: StateFlow<Boolean> = _isSyncingRemotePlaylists.asStateFlow()
 
     suspend fun syncAll() {
         coroutineScope {
@@ -53,8 +53,8 @@ class SyncUtils @Inject constructor(
         }
     }
 
-    suspend fun syncLikedSongs() {
-        if (!_isSyncingLikedSongs.compareAndSet(expect = false, update = true)) return
+    suspend fun syncRemoteLikedSongs() {
+        if (!_isSyncingRemoteLikedSongs.compareAndSet(expect = false, update = true)) return
 
         try {
             YouTube.playlist("LM").completed().onSuccess { page ->
@@ -79,12 +79,12 @@ class SyncUtils @Inject constructor(
                 }
             }
         } finally {
-            _isSyncingLikedSongs.value = false
+            _isSyncingRemoteLikedSongs.value = false
         }
     }
 
-    suspend fun syncLibrarySongs() {
-        if (!_isSyncingLibrarySongs.compareAndSet(expect = false, update = true)) return
+    suspend fun syncRemoteSongs() {
+        if (!_isSyncingRemoteSongs.compareAndSet(expect = false, update = true)) return
 
         try {
             val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos")
@@ -94,7 +94,7 @@ class SyncUtils @Inject constructor(
                 .forEach { database.update(it.song.toggleLibrary()) }
 
             coroutineScope {
-                remoteSongs.forEach { song ->
+                val jobs = remoteSongs.map { song ->
                     launch(Dispatchers.IO) {
                         val dbSong = database.song(song.id).firstOrNull()
                         database.transaction {
@@ -107,12 +107,12 @@ class SyncUtils @Inject constructor(
                 }
             }
         } finally {
-            _isSyncingLibrarySongs.value = false
+            _isSyncingRemoteSongs.value = false
         }
     }
 
-    suspend fun syncLikedAlbums() {
-        if (!_isSyncingLikedAlbums.compareAndSet(expect = false, update = true)) return
+    suspend fun syncRemoteAlbums() {
+        if (!_isSyncingRemoteAlbums.compareAndSet(expect = false, update = true)) return
 
         try {
             val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums")
@@ -141,12 +141,12 @@ class SyncUtils @Inject constructor(
                 }
             }
         } finally {
-            _isSyncingLikedAlbums.value = false
+            _isSyncingRemoteAlbums.value = false
         }
     }
 
-    suspend fun syncArtistsSubscriptions() {
-        if (!_isSyncingArtistsSubscriptions.compareAndSet(expect = false, update = true)) return
+    suspend fun syncRemoteArtists() {
+        if (!_isSyncingRemoteArtists.compareAndSet(expect = false, update = true)) return
 
         try {
             val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists")
@@ -180,12 +180,12 @@ class SyncUtils @Inject constructor(
                 }
             }
         } finally {
-            _isSyncingArtistsSubscriptions.value = false
+            _isSyncingRemoteArtists.value = false
         }
     }
 
-    suspend fun syncSavedPlaylists() {
-        if (!_isSyncingSavedPlaylists.compareAndSet(expect = false, update = true)) return
+    suspend fun syncRemotePlaylists() {
+        if (!_isSyncingRemotePlaylists.compareAndSet(expect = false, update = true)) return
 
         try {
             YouTube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
@@ -224,7 +224,7 @@ class SyncUtils @Inject constructor(
                 }
             }
         } finally {
-            _isSyncingSavedPlaylists.value = false
+            _isSyncingRemotePlaylists.value = false
         }
     }
 
