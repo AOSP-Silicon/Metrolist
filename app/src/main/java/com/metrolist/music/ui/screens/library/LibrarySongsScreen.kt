@@ -155,6 +155,8 @@ fun LibrarySongsScreen(
                         currentValue = filter,
                         onValueUpdate = {
                             filter = it
+                                if (it == SongFilter.LIKED) viewModel.syncLikedSongs()
+                                else if (it == SongFilter.LIBRARY) viewModel.syncLibrarySongs()
                         },
                         modifier = Modifier.weight(1f),
                     )
