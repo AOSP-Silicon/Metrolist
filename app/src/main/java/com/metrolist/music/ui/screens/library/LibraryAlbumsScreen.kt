@@ -113,7 +113,7 @@ fun LibraryAlbumsScreen(
                 currentValue = filter,
                 onValueUpdate = {
                     filter = it
-                        if (it == AlbumFilter.LIBRARY) viewModel.syncAlbums()
+                        if (it == AlbumFilter.LIKED) viewModel.syncAlbums()
                 },
                 modifier = Modifier.weight(1f),
             )
