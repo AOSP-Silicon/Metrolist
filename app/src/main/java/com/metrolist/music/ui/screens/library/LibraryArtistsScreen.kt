@@ -109,16 +109,17 @@ fun LibraryArtistsScreen(
                 currentValue = filter,
                 onValueUpdate = {
                     filter = it
+                        if (it == ArtistFilter.LIBRARY) viewModel.syncArtists()
                 },
                 modifier = Modifier.weight(1f),
             )
         }
     }
 
-    LaunchedEffect(filter) {
-        if (ytmSync && filter == ArtistFilter.LIKED) {
+    LaunchedEffect(Unit) {
+        if (ytmSync) {
             withContext(Dispatchers.IO) {
-                viewModel.sync()
+                viewModel.syncArtists()
             }
         }
     }
