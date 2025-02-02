@@ -144,7 +144,7 @@ fun LibraryPlaylistsScreen(
 
     LaunchedEffect(Unit) {
         if (ytmSync) {
-            viewModel.sync()
+            viewModel.syncPlaylists()
         }
     }
 
