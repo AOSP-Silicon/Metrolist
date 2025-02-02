@@ -113,16 +113,17 @@ fun LibraryAlbumsScreen(
                 currentValue = filter,
                 onValueUpdate = {
                     filter = it
+                        if (it == AlbumFilter.LIBRARY) viewModel.syncAlbums()
                 },
                 modifier = Modifier.weight(1f),
             )
         }
     }
 
-    LaunchedEffect(filter) {
-        if (ytmSync && filter == AlbumFilter.LIKED) {
+    LaunchedEffect(Unit) {
+        if (ytmSync) {
             withContext(Dispatchers.IO) {
-                viewModel.sync()
+                viewModel.syncAlbums()
             }
         }
     }
