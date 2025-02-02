@@ -122,7 +122,6 @@ constructor(
                         }
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    }
     fun syncLibrarySongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() } }
     fun syncLikedSongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() } }
 }
