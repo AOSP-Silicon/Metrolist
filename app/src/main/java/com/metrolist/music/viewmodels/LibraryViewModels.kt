@@ -66,8 +66,16 @@ constructor(
     downloadUtil: DownloadUtil,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
-    val allSongs =
-        context.dataStore.data
+    val allSongs = getSyncedSongs(context, database)
+    val isSyncingRemoteLikedSongs = syncUtils.isSyncingRemoteLikedSongs
+    val isSyncingRemoteSongs = syncUtils.isSyncingRemoteSongs
+
+    fun syncLibrarySongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() } }
+    fun syncLikedSongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() } }
+
+    private fun getSyncedSongs(context: Context, database: MusicDatabase): StateFlow<List<Song>> {
+        
+        return context.dataStore.data
             .map {
                 Triple(
                     it[SongFilterKey].toEnum(SongFilter.LIKED),
@@ -122,13 +130,6 @@ constructor(
                         }
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    fun syncLikedSongs() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncLikedSongs() }
-    }
-
-    fun syncLibrarySongs() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncLibrarySongs() }
     }
 }
 
@@ -156,9 +157,7 @@ constructor(
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun sync() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncArtistsSubscriptions() }
-    }
+    fun syncArtists() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteArtists() } }
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -206,9 +205,7 @@ constructor(
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun sync() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncLikedAlbums() }
-    }
+    fun syncAlbums() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteAlbums() } }
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -255,9 +252,7 @@ constructor(
                 database.playlists(sortType, descending)
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun sync() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncSavedPlaylists() }
-    }
+    fun syncPlaylists() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemotePlaylists() } }
 
     val topValue =
         context.dataStore.data
