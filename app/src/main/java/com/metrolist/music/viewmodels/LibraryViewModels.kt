@@ -66,64 +66,67 @@ constructor(
     downloadUtil: DownloadUtil,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
-    val allSongs = 
-        context.dataStore.data
-            .map {
-                Triple(
-                    it[SongFilterKey].toEnum(SongFilter.LIKED),
-                    it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE),
-                    (it[SongSortDescendingKey] ?: true),
-                )
-            }.distinctUntilChanged()
-            .flatMapLatest { (filter, sortType, descending) ->
-                when (filter) {
-                    SongFilter.LIBRARY -> database.songs(sortType, descending)
-                    SongFilter.LIKED -> database.likedSongs(sortType, descending)
-                    SongFilter.DOWNLOADED ->
-                        downloadUtil.downloads.flatMapLatest { downloads ->
-                            database
-                                .allSongs()
-                                .flowOn(Dispatchers.IO)
-                                .map { songs ->
-                                    songs.filter {
-                                        downloads[it.id]?.state == Download.STATE_COMPLETED
-                                    }
-                                }.map { songs ->
-                                    when (sortType) {
-                                        SongSortType.CREATE_DATE -> songs.sortedBy {
-                                            downloads[it.id]?.updateTimeMs ?: 0L
-                                        }
-
-                                        SongSortType.NAME -> songs.sortedBy { it.song.title }
-                                        SongSortType.ARTIST -> {
-                                            val collator =
-                                                Collator.getInstance(Locale.getDefault())
-                                            collator.strength = Collator.PRIMARY
-                                            songs
-                                                .sortedWith(
-                                                    compareBy(collator) { song ->
-                                                        song.artists.joinToString(
-                                                            "",
-                                                        ) { it.name }
-                                                    },
-                                                ).groupBy { it.album?.title }
-                                                .flatMap { (_, songsByAlbum) ->
-                                                    songsByAlbum.sortedBy { album ->
-                                                        album.artists.joinToString(
-                                                            "",
-                                                        ) { it.name }
-                                                    }
-                                                }
-                                        }
-
-                                        SongSortType.PLAY_TIME -> songs.sortedBy { it.song.totalPlayTime }
-                                    }.reversed(descending)
+    val allSongs =
+    context.dataStore.data
+        .map {
+            Triple(
+                it[SongFilterKey].toEnum(SongFilter.LIKED),
+                it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE),
+                (it[SongSortDescendingKey] ?: true),
+            )
+        }.distinctUntilChanged()
+        .flatMapLatest { (filter, sortType, descending) ->
+            when (filter) {
+                SongFilter.LIBRARY -> database.songs(sortType, descending)
+                SongFilter.LIKED -> database.likedSongs(sortType, descending)
+                SongFilter.DOWNLOADED ->
+                    downloadUtil.downloads.flatMapLatest { downloads ->
+                        database
+                            .allSongs()
+                            .flowOn(Dispatchers.IO)
+                            .map { songs ->
+                                songs.filter {
+                                    downloads[it.id]?.state == Download.STATE_COMPLETED
                                 }
-                        }
-                }
-            }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    fun syncLibrarySongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() } }
-    fun syncLikedSongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() } }
+                            }.map { songs ->
+                                when (sortType) {
+                                    SongSortType.CREATE_DATE -> songs.sortedBy {
+                                        downloads[it.id]?.updateTimeMs ?: 0L
+                                    }
+
+                                    SongSortType.NAME -> songs.sortedBy { it.song.title }
+                                    SongSortType.ARTIST -> {
+                                        val collator =
+                                            Collator.getInstance(Locale.getDefault())
+                                        collator.strength = Collator.PRIMARY
+                                        songs
+                                            .sortedWith(
+                                                compareBy(collator) { song ->
+                                                    song.artists.joinToString(
+                                                        "",
+                                                    ) { it.name }
+                                                },
+                                            ).groupBy { it.album?.title }
+                                            .flatMap { (_, songsByAlbum) ->
+                                                songsByAlbum.sortedBy { album ->
+                                                    album.artists.joinToString(
+                                                        "",
+                                                    ) { it.name }
+                                                }
+                                            }
+                                    }
+
+                                    SongSortType.PLAY_TIME -> songs.sortedBy { it.song.totalPlayTime }
+                                }.reversed(descending)
+                            }
+                    }
+            }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+val isSyncingRemoteLikedSongs = syncUtils.isSyncingRemoteLikedSongs
+val isSyncingRemoteSongs = syncUtils.isSyncingRemoteSongs
+
+fun syncLibrarySongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() } }
+fun syncLikedSongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() } }
 }
 
 @HiltViewModel
@@ -134,6 +137,7 @@ constructor(
     database: MusicDatabase,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
+    val isSyncingRemoteArtists = syncUtils.isSyncingRemoteArtists
     val allArtists =
         context.dataStore.data
             .map {
@@ -182,6 +186,7 @@ constructor(
     database: MusicDatabase,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
+    val isSyncingRemoteAlbums = syncUtils.isSyncingRemoteAlbums
     val allAlbums =
         context.dataStore.data
             .map {
@@ -235,6 +240,7 @@ constructor(
     database: MusicDatabase,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
+    val isSyncingRemotePlaylists = syncUtils.isSyncingRemotePlaylists
     val allPlaylists =
         context.dataStore.data
             .map {
@@ -349,7 +355,17 @@ constructor(
 @HiltViewModel
 class LibraryViewModel
 @Inject
-constructor() : ViewModel() {
+constructor(
+    @ApplicationContext context: Context,
+    database: MusicDatabase,
+    syncUtils: SyncUtils
+) : ViewModel() {
     private val curScreen = mutableStateOf(LibraryFilter.LIBRARY)
     val filter: MutableState<LibraryFilter> = curScreen
+
+    val isSyncingRemoteLikedSongs = syncUtils.isSyncingRemoteLikedSongs
+    val isSyncingRemoteSongs = syncUtils.isSyncingRemoteSongs
+    val isSyncingRemoteAlbums = syncUtils.isSyncingRemoteAlbums
+    val isSyncingRemoteArtists = syncUtils.isSyncingRemoteArtists
+    val isSyncingRemotePlaylists = syncUtils.isSyncingRemotePlaylists
 }
