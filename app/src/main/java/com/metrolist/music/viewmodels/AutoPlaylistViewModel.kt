@@ -80,7 +80,7 @@ constructor(
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun syncLikedSongs() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncLikedSongs() }
+    fun syncRemoteLikedSongs() {
+        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() }
     }
 }
