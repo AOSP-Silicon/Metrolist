@@ -66,16 +66,8 @@ constructor(
     downloadUtil: DownloadUtil,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
-    val allSongs = getSyncedSongs(context, database)
-    val isSyncingRemoteLikedSongs = syncUtils.isSyncingRemoteLikedSongs
-    val isSyncingRemoteSongs = syncUtils.isSyncingRemoteSongs
-
-    fun syncLibrarySongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() } }
-    fun syncLikedSongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() } }
-
-    private fun getSyncedSongs(context: Context, database: MusicDatabase): StateFlow<List<Song>> {
-        
-        return context.dataStore.data
+    val allSongs = 
+        context.dataStore.data
             .map {
                 Triple(
                     it[SongFilterKey].toEnum(SongFilter.LIKED),
@@ -131,6 +123,8 @@ constructor(
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     }
+    fun syncLibrarySongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() } }
+    fun syncLikedSongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() } }
 }
 
 @HiltViewModel
