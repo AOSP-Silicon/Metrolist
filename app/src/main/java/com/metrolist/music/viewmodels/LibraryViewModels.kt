@@ -77,8 +77,8 @@ constructor(
         }.distinctUntilChanged()
         .flatMapLatest { (filter, sortType, descending) ->
             when (filter) {
-                SongFilter.LIBRARY -> database.songs(sortType, descending)
-                SongFilter.LIKED -> database.likedSongs(sortType, descending)
+                SongFilter.LIKED -> database.songs(sortType, descending)
+                SongFilter.LIBRARY -> database.likedSongs(sortType, descending)
                 SongFilter.DOWNLOADED ->
                     downloadUtil.downloads.flatMapLatest { downloads ->
                         database
@@ -149,8 +149,8 @@ constructor(
             }.distinctUntilChanged()
             .flatMapLatest { (filter, sortType, descending) ->
                 when (filter) {
-                    ArtistFilter.LIBRARY -> database.artists(sortType, descending)
-                    ArtistFilter.LIKED -> database.artistsBookmarked(sortType, descending)
+                    ArtistFilter.LIKED -> database.artists(sortType, descending)
+                    ArtistFilter.LIBRARY -> database.artistsBookmarked(sortType, descending)
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -198,8 +198,8 @@ constructor(
             }.distinctUntilChanged()
             .flatMapLatest { (filter, sortType, descending) ->
                 when (filter) {
-                    AlbumFilter.LIBRARY -> database.albums(sortType, descending)
-                    AlbumFilter.LIKED -> database.albumsLiked(sortType, descending)
+                    AlbumFilter.LIKED -> database.albums(sortType, descending)
+                    AlbumFilter.LIBRARY -> database.albumsLiked(sortType, descending)
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
