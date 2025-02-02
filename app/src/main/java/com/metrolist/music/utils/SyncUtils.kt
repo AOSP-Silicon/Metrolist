@@ -45,11 +45,11 @@ class SyncUtils @Inject constructor(
 
     suspend fun syncAll() {
         coroutineScope {
-            launch { syncLikedSongs() }
-            launch { syncLibrarySongs() }
-            launch { syncLikedAlbums() }
-            launch { syncArtistsSubscriptions() }
-            launch { syncSavedPlaylists() }
+            launch { syncRemoteLikedSongs() }
+            launch { syncRemoteSongs() }
+            launch { syncRemoteAlbums() }
+            launch { syncRemoteArtists() }
+            launch { syncRemotePlaylists() }
         }
     }
 
