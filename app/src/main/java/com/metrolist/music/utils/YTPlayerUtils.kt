@@ -65,8 +65,15 @@ object YTPlayerUtils {
          * This is why it is allowed to be null.
          */
         val signatureTimestamp = getSignatureTimestampOrNull(videoId)
+
+        // --- TODO: GET WEB PO TOKENS HERE ---
+        val webPlayerPot = "" // TODO
+        val webStreamingPot = "" // TODO
+        // ---
+
         val mainPlayerResponse =
-            YouTube.player(videoId, playlistId, MAIN_CLIENT, signatureTimestamp).getOrThrow()
+            YouTube.player(videoId, playlistId, MAIN_CLIENT, signatureTimestamp, webPlayerPot)
+                .getOrThrow()
         val audioConfig = mainPlayerResponse.playerConfig?.audioConfig
         val videoDetails = mainPlayerResponse.videoDetails
         val playbackTracking = mainPlayerResponse.playbackTracking
@@ -80,18 +87,25 @@ object YTPlayerUtils {
             streamUrl = null
             streamExpiresInSeconds = null
             // decide which client to use
-            if (clientIndex == -1) {
-                // try with streams from main client first
+            val client =
+                if (clientIndex == -1) {
+                    // try with streams from main client first
+                    MAIN_CLIENT
+                } else {
+                    // after main client use fallback clients
+                    STREAM_FALLBACK_CLIENTS[clientIndex]
+                }
+
+            // get player response for streams
+            if (client == MAIN_CLIENT) {
                 streamPlayerResponse = mainPlayerResponse
             } else {
-                // after main client use fallback clients
-                val client = STREAM_FALLBACK_CLIENTS[clientIndex]
                 if (client.loginRequired && YouTube.cookie == null) {
                     // skip client if it requires login but user is not logged in
                     continue
                 }
-                streamPlayerResponse =
-                    YouTube.player(videoId, playlistId, client, signatureTimestamp).getOrNull()
+                YouTube.player(videoId, playlistId, client, signatureTimestamp, webPlayerPot)
+                    .getOrNull()
             }
             // process current client response
             if (streamPlayerResponse?.playabilityStatus?.status == "OK") {
@@ -105,6 +119,11 @@ object YTPlayerUtils {
                 streamUrl = findUrlOrNull(format, videoId) ?: continue
                 streamExpiresInSeconds =
                     streamPlayerResponse.streamingData?.expiresInSeconds ?: continue
+
+                if (client.useWebPoTokens) {
+                    streamUrl += "&pot=$webStreamingPot";
+                }
+
                 if (clientIndex == STREAM_FALLBACK_CLIENTS.size - 1) {
                     /** skip [validateStatus] for last client */
                     break
