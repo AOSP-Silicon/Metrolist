@@ -57,19 +57,11 @@ data class ArtistPage(
 
         private fun fromMusicShelfRenderer(renderer: MusicShelfRenderer): ArtistSection? {
             return ArtistSection(
-                title =
-                    renderer.title
-                        ?.runs
-                        ?.firstOrNull()
-                        ?.text ?: return null,
+                title = renderer.title?.runs?.firstOrNull()?.text ?: "",
                 items = renderer.contents?.getItems()?.mapNotNull {
                     fromMusicResponsiveListItemRenderer(it)
-                    } ?: return null,
-                moreEndpoint =
-                    renderer.title.runs
-                        .firstOrNull()
-                        ?.navigationEndpoint
-                        ?.browseEndpoint,
+                }?.ifEmpty { null } ?: return null,
+                moreEndpoint = renderer.title?.runs?.firstOrNull()?.navigationEndpoint?.browseEndpoint
             )
         }
 
