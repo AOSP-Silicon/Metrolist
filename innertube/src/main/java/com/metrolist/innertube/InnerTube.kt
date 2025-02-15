@@ -300,7 +300,6 @@ class InnerTube {
                 playlistSetVideoId = playlistSetVideoId,
                 index = index,
                 params = params,
-                continuation = continuation,
             ),
         )
     }
