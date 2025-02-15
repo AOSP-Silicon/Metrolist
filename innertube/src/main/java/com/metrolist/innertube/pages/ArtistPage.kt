@@ -13,6 +13,7 @@ import com.metrolist.innertube.models.PlaylistItem
 import com.metrolist.innertube.models.SectionListRenderer
 import com.metrolist.innertube.models.SongItem
 import com.metrolist.innertube.models.YTItem
+import com.metrolist.innertube.models.getItems
 import com.metrolist.innertube.models.filterExplicit
 import com.metrolist.innertube.models.oddElements
 
@@ -61,9 +62,8 @@ data class ArtistPage(
                         ?.runs
                         ?.firstOrNull()
                         ?.text ?: return null,
-                items =
-                    renderer.contents?.mapNotNull {
-                        fromMusicResponsiveListItemRenderer(it.musicResponsiveListItemRenderer)
+                items = renderer.contents?.getItems()?.mapNotNull {
+                    fromMusicResponsiveListItemRenderer(it)
                     } ?: return null,
                 moreEndpoint =
                     renderer.title.runs
