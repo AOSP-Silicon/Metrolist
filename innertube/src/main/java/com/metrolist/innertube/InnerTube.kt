@@ -277,6 +277,7 @@ class InnerTube {
                 context = client.toContext(locale, visitorData),
                 browseId = browseId,
                 params = params,
+                continuation = continuation
             ),
         )
     }
