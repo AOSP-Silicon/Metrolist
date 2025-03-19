@@ -44,7 +44,7 @@ fun PlayerSettings(
 ) {
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
         AudioQualityKey,
-        defaultValue = AudioQuality.AUTO
+        defaultValue = AudioQuality.MAX
     )
     val (persistentQueue, onPersistentQueueChange) = rememberPreference(
         PersistentQueueKey,
