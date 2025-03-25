@@ -118,17 +118,23 @@ jobs:
         export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
         yes | sdkmanager --licenses
         sdkmanager "build-tools;34.0.0"
+
+    - name: Decode and Save signing keys
+      run: |
+        echo "${{ secrets.KEY_BASE64 }}" | base64 --decode > releasekey.pk8
+        echo "${{ secrets.CERT_BASE64 }}" | base64 --decode > releasekey.x509.pem
+        chmod 400 releasekey.pk8
+        chmod 400 releasekey.x509.pem
+
     - name: Sign APK with apksigner
       run: |
         $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
-          --ks my-release-key.jks \
-          --ks-key-alias ${{ secrets.KEY_ALIAS }} \
-          --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-          --key-pass pass:${{ secrets.KEY_PASSWORD }} \
+          --key releasekey.pk8 \
+          --cert releasekey.x509.pem \
           --out app/build/outputs/apk/release/app-release.apk \
           --v4-signing-enabled true \
-          app/build/outputs/apk/release/app-release-unsigned.apk          
-      
+          app/build/outputs/apk/release/app-release-unsigned.apk 
+
     - name: Verify Signed APK
       run: |
         $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
