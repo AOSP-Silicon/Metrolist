@@ -14,7 +14,7 @@ object Updater {
     suspend fun getLatestVersionName(): Result<String> =
         runCatching {
             val response =
-                client.get("https://api.github.com/repos/mostafaalagamy/Metrolist/releases/latest")
+                client.get("https://api.github.com/repos/AOSP-Silicon/Metrolist/releases/latest")
                     .bodyAsText()
             val json = JSONObject(response)
             val versionName = json.getString("name")
@@ -23,7 +23,7 @@ object Updater {
         }
 
     fun getLatestDownloadUrl(): String {
-        val baseUrl = "https://github.com/mostafaalagamy/Metrolist/releases/latest/download/"
+        val baseUrl = "https://github.com/AOSP-Silicon/Metrolist/releases/latest/download/"
         val architecture = BuildConfig.ARCHITECTURE
         return if (architecture == "universal") {
             baseUrl + "Metrolist.apk"
