@@ -70,9 +70,12 @@ jobs:
           exit 1
         fi
 
-    - name: Decode keystore secret
+    - name: Decode and Save signing keys
       run: |
-        echo "${{ secrets.KEYSTORE }}" | base64 --decode > my-release-key.jks
+        echo "${{ secrets.KEY_BASE64 }}" | base64 --decode > releasekey.pk8
+        echo "${{ secrets.CERT_BASE64 }}" | base64 --decode > releasekey.x509.pem
+        chmod 400 releasekey.pk8
+        chmod 400 releasekey.x509.pem
 
     - name: Install Android SDK Build Tools
       run: |
@@ -90,10 +93,8 @@ jobs:
     - name: Sign APK with apksigner
       run: |
         $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
-          --ks my-release-key.jks \
-          --ks-key-alias ${{ secrets.KEY_ALIAS }} \
-          --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-          --key-pass pass:${{ secrets.KEY_PASSWORD }} \
+          --key releasekey.pk8 \
+          --cert releasekey.x509.pem \
           --out app/build/outputs/apk/release/app-release.apk \
           app/build/outputs/apk/release/app-release-unsigned.apk
 
