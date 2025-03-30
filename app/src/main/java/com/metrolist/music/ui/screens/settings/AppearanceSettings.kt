@@ -55,6 +55,8 @@ import com.metrolist.music.constants.LyricsTextPositionKey
 import com.metrolist.music.constants.PlayerBackgroundStyle
 import com.metrolist.music.constants.PlayerBackgroundStyleKey
 import com.metrolist.music.constants.PureBlackKey
+import com.metrolist.music.constants.PlayerButtonsStyle
+import com.metrolist.music.constants.PlayerButtonsStyleKey
 import com.metrolist.music.constants.SliderStyle
 import com.metrolist.music.constants.SliderStyleKey
 import com.metrolist.music.constants.SlimNavBarKey
@@ -95,6 +97,10 @@ fun AppearanceSettings(
     val (defaultOpenTab, onDefaultOpenTabChange) = rememberEnumPreference(
         DefaultOpenTabKey,
         defaultValue = NavigationTab.HOME
+    )
+    val (playerButtonsStyle, onPlayerButtonsStyleChange) = rememberEnumPreference(
+        PlayerButtonsStyleKey,
+        defaultValue = PlayerButtonsStyle.DEFAULT
     )
     val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(
         LyricsTextPositionKey,
@@ -328,6 +334,19 @@ fun AppearanceSettings(
             },
         )
 
+        EnumListPreference(
+            title = { Text(stringResource(R.string.player_buttons_style)) },
+            icon = { Icon(painterResource(R.drawable.palette), null) },
+            selectedValue = playerButtonsStyle,
+            onValueSelected = onPlayerButtonsStyleChange,
+            valueText = {
+                when (it) {
+                    PlayerButtonsStyle.DEFAULT -> stringResource(R.string.default_style)
+                    PlayerButtonsStyle.SECONDARY -> stringResource(R.string.secondary_color_style)
+                }
+            },
+        )
+
         PreferenceEntry(
             title = { Text(stringResource(R.string.player_slider_style)) },
             description =
@@ -441,7 +460,7 @@ fun AppearanceSettings(
                     contentDescription = null,
                 )
             }
-        },
+        }
     )
 }
 

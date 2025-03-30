@@ -306,10 +306,9 @@
     <!-- الإعدادات -->
     <string name="settings">الإعدادات</string>
     <string name="login_settings">إعدادات تسجيل الدخول</string>
-    <string name="use_login_for_browse">استخدم تسجيل الدخول لتصفح المحتوي المميز</string>
-    <string name="use_login_for_browse_desc">يمكن أن يعرض الألبومات الخاصة بالمشتركين في الحسابات المميزة فقط إذا كنت مسجلًا بحساب مميز
+    <string name="use_login_for_browse">استخدم تسجيل الدخول لتصفح المزيد من المحتوي</string>
+    <string name="use_login_for_browse_desc">يمكن أن يعرض الألبومات الخاصة بالمشتركين والمزيد من المحتوي</string>
 
-    </string>
     <string name="general_settings">الإعدادات العامة</string>
 
     <string name="appearance">المظهر</string>
@@ -318,6 +317,9 @@
     <string name="gradient">ألوان متدرجة</string>
     <string name="player_background_blur">ضبابي</string>
     <string name="follow_theme">اتباع السيم</string>
+    <string name="player_buttons_style">ألوان أزرار المشغل</string>
+    <string name="default_style">افتراضي</string>
+    <string name="secondary_color_style">اللون الثانوي للتطبيق</string>
     <string name="enable_squiggly_slider">تمكين الشريط المتعرج</string>
     <string name="enable_swipe_thumbnail">تمكين التمرير لتغيير الأغنية</string>
     <string name="dark_theme">السمة الداكنة</string>
@@ -395,6 +397,10 @@
     <string name="auto_skip_next_on_error_desc">تأكد من تجربة التشغيل المتواصلة</string>
     <string name="stop_music_on_task_clear">إيقاف الموسيقى عند تنظيف الذاكرة العشوائية</string>
     <string name="equalizer">مُعادل الصوت</string>
+    <string name="min_playback_duration_title">الحد الأدنى لمدة التشغيل</string>
+    <string name="min_playback_duration_description">الحد الأدنى لمدة تشغيل الأغنية قبل اعتبارها مُشغّلة</string>
+    <string name="percentage_format">%d%%</string>
+    <string name="minimum_playback_duration">الحد الأدنى لمدة التشغيل</string>
 
     <string name="storage">التخزين</string>
     <string name="cache">التخزين المؤقت</string>
@@ -435,6 +441,7 @@
     <string name="backup_create_success">تم إنشاء النسخ الاحتياطي بنجاح</string>
     <string name="backup_create_failed">تعذر إنشاء النسخ الاحتياطي</string>
     <string name="restore_failed">فشل في استعادة النسخ الاحتياطي</string>
+    <string name="not_logged_in_youtube">لم يتم تسجيل الدخول إلى يوتيوب</string>
 
     <string name="discord_integration">دمج ديسكورد</string>
     <string name="discord_information">متروليست تستخدم مكتبة KizzyRPC لتعيين حالة حسابك على ديسكورد. يتضمن ذلك استخدام اتصال Discord Gateway، والذي قد يعتبر انتهاكًا لشروط الخدمة الخاصة بديسكورد. ومع ذلك، لا توجد حالات معروفة تم فيها تعليق حسابات المستخدمين لهذا السبب. استخدم هذه الخدمة على مسؤوليتك الخاصة.

@@ -36,7 +36,6 @@ val AudioQualityKey = stringPreferencesKey("audioQuality")
 
 enum class AudioQuality {
     AUTO,
-    MAX,
     HIGH,
     LOW,
 }
@@ -236,6 +235,11 @@ enum class PreferredLyricsProvider {
     KUGOU,
 }
 
+enum class PlayerButtonsStyle {
+    DEFAULT,
+    SECONDARY,
+}
+
 enum class PlayerBackgroundStyle {
     DEFAULT,
     GRADIENT,
@@ -243,8 +247,9 @@ enum class PlayerBackgroundStyle {
 }
 
 val TopSize = stringPreferencesKey("topSize")
-val HistoryDuration = floatPreferencesKey("historyDuration")
+val minPlaybackDurKey = intPreferencesKey("minPlaybackDur")
 
+val PlayerButtonsStyleKey = stringPreferencesKey("player_buttons_style")
 val PlayerBackgroundStyleKey = stringPreferencesKey("playerBackgroundStyle")
 val ShowLyricsKey = booleanPreferencesKey("showLyrics")
 val LyricsTextPositionKey = stringPreferencesKey("lyricsTextPosition")

@@ -16,8 +16,8 @@ android {
         applicationId = "com.metrolist.music"
         minSdk = 24
         targetSdk = 35
-        versionCode = 113
-        versionName = "11.2.0"
+        versionCode = 114
+        versionName = "11.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -70,6 +70,9 @@ android {
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
+    }
+    androidResources {
+        generateLocaleConfig = true
     }
 }
 
@@ -132,4 +135,5 @@ dependencies {
     implementation(libs.timber)
 
     implementation(libs.ktor.serialization.json)
+
 }
