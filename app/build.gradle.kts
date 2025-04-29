@@ -11,15 +11,15 @@ plugins {
 
 android {
     namespace = "com.metrolist.music"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "25.1.8937393"
 
     defaultConfig {
         applicationId = "com.metrolist.music"
         minSdk = 21
-        targetSdk = 35
-        versionCode = 116
-        versionName = "11.6.0"
+        targetSdk = 36
+        versionCode = 118
+        versionName = "11.8.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -88,7 +88,11 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
-            signingConfig = signingConfigs.getByName("persistentDebug")
+            signingConfig = if (System.getenv("GITHUB_EVENT_NAME") == "pull_request") {
+                signingConfigs.getByName("debug")
+            } else {
+                signingConfigs.getByName("persistentDebug")
+            }
         }
     }
 
@@ -161,7 +165,7 @@ dependencies {
 
     implementation(libs.material3)
     implementation(libs.palette)
-    implementation(projects.materialColorUtilities)
+    implementation(libs.materialKolor)
 
     implementation(libs.coil)
 
@@ -188,10 +192,9 @@ dependencies {
     implementation(projects.kizzy)
 
     implementation(libs.ktor.client.core)
+    implementation(libs.ktor.serialization.json)
 
     coreLibraryDesugaring(libs.desugaring)
 
     implementation(libs.timber)
-
-    implementation(libs.ktor.serialization.json)
 }

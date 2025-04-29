@@ -16,10 +16,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.palette.graphics.Palette
-import com.google.material.color.dynamiccolor.DynamicScheme
-import com.google.material.color.hct.Hct
-import com.google.material.color.scheme.SchemeTonalSpot
-import com.google.material.color.score.Score
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamicColorScheme
+import com.materialkolor.score.Score
 
 val DefaultThemeColor = Color(0xFFED5564)
 
@@ -36,9 +35,12 @@ fun MetrolistTheme(
             if (darkTheme) dynamicDarkColorScheme(context).pureBlack(pureBlack)
             else dynamicLightColorScheme(context)
         } else {
-            SchemeTonalSpot(Hct.fromInt(themeColor.toArgb()), darkTheme, 0.0)
-                .toColorScheme()
-                .pureBlack(darkTheme && pureBlack)
+            dynamicColorScheme(
+                primary = themeColor,
+                isDark = darkTheme,
+                isAmoled = darkTheme && pureBlack,
+                style = PaletteStyle.TonalSpot
+            )
         }
     }
 
@@ -51,7 +53,7 @@ fun MetrolistTheme(
 
 fun Bitmap.extractThemeColor(): Color {
     val colorsToPopulation = Palette.from(this)
-        .maximumColorCount(8)
+        .maximumColorCount(64)
         .generate()
         .swatches
         .associate { it.rgb to it.population }
@@ -61,7 +63,7 @@ fun Bitmap.extractThemeColor(): Color {
 
 fun Bitmap.extractGradientColors(): List<Color> {
     val extractedColors = Palette.from(this)
-        .maximumColorCount(16)
+        .maximumColorCount(64)
         .generate()
         .swatches
         .associate { it.rgb to it.population }
@@ -74,45 +76,6 @@ fun Bitmap.extractGradientColors(): List<Color> {
     else
         listOf(Color(0xFF595959), Color(0xFF0D0D0D))
 }
-
-fun DynamicScheme.toColorScheme() = ColorScheme(
-    primary = Color(primary),
-    onPrimary = Color(onPrimary),
-    primaryContainer = Color(primaryContainer),
-    onPrimaryContainer = Color(onPrimaryContainer),
-    inversePrimary = Color(inversePrimary),
-    secondary = Color(secondary),
-    onSecondary = Color(onSecondary),
-    secondaryContainer = Color(secondaryContainer),
-    onSecondaryContainer = Color(onSecondaryContainer),
-    tertiary = Color(tertiary),
-    onTertiary = Color(onTertiary),
-    tertiaryContainer = Color(tertiaryContainer),
-    onTertiaryContainer = Color(onTertiaryContainer),
-    background = Color(background),
-    onBackground = Color(onBackground),
-    surface = Color(surface),
-    onSurface = Color(onSurface),
-    surfaceVariant = Color(surfaceVariant),
-    onSurfaceVariant = Color(onSurfaceVariant),
-    surfaceTint = Color(primary),
-    inverseSurface = Color(inverseSurface),
-    inverseOnSurface = Color(inverseOnSurface),
-    error = Color(error),
-    onError = Color(onError),
-    errorContainer = Color(errorContainer),
-    onErrorContainer = Color(onErrorContainer),
-    outline = Color(outline),
-    outlineVariant = Color(outlineVariant),
-    scrim = Color(scrim),
-    surfaceBright = Color(surfaceBright),
-    surfaceDim = Color(surfaceDim),
-    surfaceContainer = Color(surfaceContainer),
-    surfaceContainerHigh = Color(surfaceContainerHigh),
-    surfaceContainerHighest = Color(surfaceContainerHighest),
-    surfaceContainerLow = Color(surfaceContainerLow),
-    surfaceContainerLowest = Color(surfaceContainerLowest)
-)
 
 fun ColorScheme.pureBlack(apply: Boolean) =
     if (apply) copy(
