@@ -18,8 +18,8 @@ android {
         applicationId = "com.metrolist.music"
         minSdk = 21
         targetSdk = 36
-        versionCode = 118
-        versionName = "11.8.0"
+        versionCode = 119
+        versionName = "11.9.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -183,7 +183,7 @@ dependencies {
     implementation(libs.apache.lang3)
 
     implementation(libs.hilt)
-    implementation("org.jsoup:jsoup:1.19.1")
+    implementation("org.jsoup:jsoup:1.20.1")
     kapt(libs.hilt.compiler)
 
     implementation(projects.innertube)
@@ -193,6 +193,8 @@ dependencies {
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.serialization.json)
+
+    implementation(project(":jossredconnect"))
 
     coreLibraryDesugaring(libs.desugaring)
 
