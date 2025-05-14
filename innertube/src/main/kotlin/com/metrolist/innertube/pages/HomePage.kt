@@ -12,6 +12,7 @@ import com.metrolist.innertube.models.PlaylistItem
 import com.metrolist.innertube.models.SongItem
 import com.metrolist.innertube.models.YTItem
 import com.metrolist.innertube.models.oddElements
+import com.metrolist.innertube.models.filterExplicit
 
 data class HomePage(
     val sections: List<Section>,
@@ -66,7 +67,7 @@ data class HomePage(
                         val artists = artistRuns.map {
                             Artist(
                                 name = it.text,
-                                id = it.navigationEndpoint?.browseEndpoint?.browseId
+                                id = it.navigationEndpoint?.browseEndpoint?.browseId ?: return null
                             )
                         }.takeIf { it.isNotEmpty() }
                         artists?.let {
@@ -216,6 +217,13 @@ data class HomePage(
             }
         }
     }
+    fun filterExplicit(enabled: Boolean = true) =
+        if (enabled) {
+            copy(sections = sections.map {
+                it.copy(items = it.items.filterExplicit())
+            })
+        } else this
+
     enum class SectionType {
          LIST, GRID
     }
