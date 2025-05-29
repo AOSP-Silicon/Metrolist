@@ -1,29 +1,29 @@
 [versions]
-androidGradlePlugin = "8.11.0-alpha09"
+androidGradlePlugin = "8.12.0-alpha02"
 annotation = "1.9.1"
-json = "20250107"
-kotlin = "2.1.20"
-compose = "1.9.0-alpha01"
-lifecycle = "2.9.0-rc01"
-material3 = "1.4.0-alpha13"
-materialKolor = "2.1.1"
-media3 = "1.6.1"
+json = "20250517"
+kotlin = "2.2.0-RC"
+compose = "1.9.0-alpha03"
+lifecycle = "2.9.0"
+material3 = "1.4.0-alpha15"
+materialKolor = "3.0.0-beta01"
+media3 = "1.8.0-alpha01"
 room = "2.7.1"
 hilt = "2.56.2"
-ktor = "3.1.2"
-ksp = "2.1.20-2.0.1"
+ktor = "3.1.3"
+ksp = "2.2.0-RC-2.0.1"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
-guava = { group = "com.google.guava", name = "guava", version = "33.4.8-android" }
+guava = { group = "com.google.guava", name = "guava", version = "33.4.8-jre" }
 coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.10.2" }
-concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.3.0-alpha01" }
+concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.3.0-beta01" }
 
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
-activity = { group = "androidx.activity", name = "activity-compose", version = "1.11.0-rc01" }
-navigation = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.0-rc01" }
-hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
-datastore = { group = "androidx.datastore", name = "datastore-preferences", version = "1.2.0-alpha01" }
+activity = { group = "androidx.activity", name = "activity-compose", version = "1.12.0-alpha01" }
+navigation = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.0" }
+hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.3.0-alpha01" }
+datastore = { group = "androidx.datastore", name = "datastore-preferences", version = "1.2.0-alpha02" }
 
 compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "compose" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose" }
@@ -44,7 +44,7 @@ materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "ma
 
 coil = { group = "io.coil-kt", name = "coil-compose", version = "2.7.0" }
 
-shimmer = { group = "com.valentinilk.shimmer", name = "compose-shimmer", version = "1.3.2" }
+shimmer = { group = "com.valentinilk.shimmer", name = "compose-shimmer", version = "1.3.3" }
 
 palette = { group = "androidx.palette", name = "palette", version = "1.0.0" }
 
@@ -78,7 +78,7 @@ junit = { group = "junit", name = "junit", version = "4.13.2" }
 
 timber = { group = "com.jakewharton.timber", name = "timber", version = "5.0.1" }
 
-newpipe-extractor = { group = "com.github.libre-tube", name = "NewPipeExtractor", version = "bc9a5a220e" }
+newpipe-extractor = { group = "com.github.libre-tube", name = "NewPipeExtractor", version = "bcb7705" }
 
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

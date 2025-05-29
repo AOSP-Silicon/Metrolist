@@ -38,15 +38,16 @@ object YTPlayerUtils {
      */
     private val STREAM_FALLBACK_CLIENTS: Array<YouTubeClient> = arrayOf(
         ANDROID_VR_NO_AUTH,
+        MOBILE,
         TVHTML5_SIMPLY_EMBEDDED_PLAYER,
         IOS,
         WEB,
-        WEB_CREATOR,
-        MOBILE
+        WEB_CREATOR
     )
     data class PlaybackData(
         val audioConfig: PlayerResponse.PlayerConfig.AudioConfig?,
         val videoDetails: PlayerResponse.VideoDetails?,
+        val playbackTracking: PlayerResponse.PlaybackTracking?,
         val format: PlayerResponse.StreamingData.Format,
         val streamUrl: String,
         val streamExpiresInSeconds: Int,
@@ -88,6 +89,7 @@ object YTPlayerUtils {
             YouTube.player(videoId, playlistId, MAIN_CLIENT, signatureTimestamp).getOrThrow()
         val audioConfig = mainPlayerResponse.playerConfig?.audioConfig
         val videoDetails = mainPlayerResponse.videoDetails
+        val playbackTracking = mainPlayerResponse.playbackTracking
         var format: PlayerResponse.StreamingData.Format? = null
         var streamUrl: String? = null
         var streamExpiresInSeconds: Int? = null
@@ -206,6 +208,7 @@ object YTPlayerUtils {
         PlaybackData(
             audioConfig,
             videoDetails,
+            playbackTracking,
             format,
             streamUrl,
             streamExpiresInSeconds,
