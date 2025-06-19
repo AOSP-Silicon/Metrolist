@@ -51,6 +51,7 @@ import com.metrolist.music.constants.GridItemSize
 import com.metrolist.music.constants.GridItemsSizeKey
 import com.metrolist.music.constants.LibraryFilter
 import com.metrolist.music.constants.LyricsClickKey
+import com.metrolist.music.constants.LyricsScrollKey
 import com.metrolist.music.constants.LyricsTextPositionKey
 import com.metrolist.music.constants.PlayerBackgroundStyle
 import com.metrolist.music.constants.PlayerBackgroundStyleKey
@@ -112,6 +113,7 @@ fun AppearanceSettings(
         defaultValue = LyricsPosition.CENTER
     )
     val (lyricsClick, onLyricsClickChange) = rememberPreference(LyricsClickKey, defaultValue = true)
+    val (lyricsScroll, onLyricsScrollChange) = rememberPreference(LyricsScrollKey, defaultValue = true)
     val (sliderStyle, onSliderStyleChange) = rememberEnumPreference(
         SliderStyleKey,
         defaultValue = SliderStyle.DEFAULT
@@ -419,6 +421,13 @@ fun AppearanceSettings(
             onCheckedChange = onLyricsClickChange,
         )
 
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_auto_scroll)) },
+            icon = { Icon(painterResource(R.drawable.lyrics), null) },
+            checked = lyricsScroll,
+            onCheckedChange = onLyricsScrollChange,
+        )
+
         PreferenceGroupTitle(
             title = stringResource(R.string.misc),
         )
@@ -478,8 +487,8 @@ fun AppearanceSettings(
             onValueSelected = onGridItemSizeChange,
             valueText = {
                 when (it) {
-                    GridItemSize.SMALL -> stringResource(R.string.small)
                     GridItemSize.BIG -> stringResource(R.string.big)
+                    GridItemSize.SMALL -> stringResource(R.string.small)
                 }
             },
         )

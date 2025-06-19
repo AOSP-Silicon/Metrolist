@@ -6,11 +6,11 @@ import android.content.res.Configuration
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -93,14 +93,16 @@ import com.metrolist.music.LocalPlayerConnection
 import com.metrolist.music.R
 import com.metrolist.music.constants.DarkModeKey
 import com.metrolist.music.constants.LyricsClickKey
+import com.metrolist.music.constants.LyricsScrollKey
 import com.metrolist.music.constants.LyricsTextPositionKey
 import com.metrolist.music.constants.PlayerBackgroundStyle
 import com.metrolist.music.constants.PlayerBackgroundStyleKey
 import com.metrolist.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.metrolist.music.lyrics.LyricsEntry
-import com.metrolist.music.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
 import com.metrolist.music.lyrics.LyricsUtils.findCurrentLineIndex
+import com.metrolist.music.lyrics.LyricsUtils.isJapanese
 import com.metrolist.music.lyrics.LyricsUtils.parseLyrics
+import com.metrolist.music.lyrics.LyricsUtils.romanizeJapanese
 import com.metrolist.music.ui.component.shimmer.ShimmerHost
 import com.metrolist.music.ui.component.shimmer.TextPlaceholder
 import com.metrolist.music.ui.menu.LyricsMenu
@@ -120,7 +122,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @RequiresApi(Build.VERSION_CODES.M)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedBoxWithConstraintsScope")
+@SuppressLint("UnusedBoxWithConstraintsScope", "StringFormatInvalid")
 @Composable
 fun Lyrics(
     sliderPositionProvider: () -> Long?,
@@ -137,6 +139,7 @@ fun Lyrics(
 
     val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
     val changeLyrics by rememberPreference(LyricsClickKey, true)
+    val scrollLyrics by rememberPreference(LyricsScrollKey, true)
     val scope = rememberCoroutineScope()
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
@@ -154,16 +157,34 @@ fun Lyrics(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
-    val lines =
-        remember(lyrics) {
-            if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
-                emptyList()
-            } else if (lyrics.startsWith("[")) {
-                listOf(HEAD_LYRICS_ENTRY) + parseLyrics(lyrics)
-            } else {
-                lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
+    val lines = remember(lyrics, scope) {
+        if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
+            emptyList()
+        } else if (lyrics.startsWith("[")) {
+            val parsedLines = parseLyrics(lyrics)
+            parsedLines.map { entry ->
+                val newEntry = LyricsEntry(entry.time, entry.text)
+                if (isJapanese(entry.text)) {
+                    scope.launch {
+                        newEntry.romanizedTextFlow.value = romanizeJapanese(entry.text)
+                    }
+                }
+                newEntry
+            }.let {
+                listOf(LyricsEntry.HEAD_LYRICS_ENTRY) + it
+            }
+        } else {
+            lyrics.lines().mapIndexed { index, line ->
+                val newEntry = LyricsEntry(index * 100L, line)
+                if (isJapanese(line)) {
+                    scope.launch {
+                        newEntry.romanizedTextFlow.value = romanizeJapanese(line)
+                    }
+                }
+                newEntry
             }
         }
+    }
     val isSynced =
         remember(lyrics) {
             !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
@@ -294,19 +315,17 @@ fun Lyrics(
     }
 
     LaunchedEffect(currentLineIndex, lastPreviewTime, initialScrollDone) {
-        /**
-         * Count number of new lines in a lyric
-         */
-        fun countNewLine(str: String) = str.count { it == '\n' }
 
         /**
          * Calculate the lyric offset Based on how many lines (\n chars)
          */
         fun calculateOffset() = with(density) {
             if (currentLineIndex < 0 || currentLineIndex >= lines.size) return@with 0
-            val count = countNewLine(lines[currentLineIndex].text)
+            val currentItem = lines[currentLineIndex]
+            val totalNewLines = currentItem.text.count { it == '\n' }
+
             val dpValue = if (landscapeOffset) 16.dp else 20.dp
-            dpValue.toPx().toInt() * count
+            dpValue.toPx().toInt() * totalNewLines
         }
 
         if (!isSynced) return@LaunchedEffect
@@ -328,7 +347,7 @@ fun Lyrics(
                 val visibleItemsInfo = lazyListState.layoutInfo.visibleItemsInfo
                 val isCurrentLineVisible = visibleItemsInfo.any { it.index == currentLineIndex }
 
-                if (isCurrentLineVisible) {
+                if (scrollLyrics || isCurrentLineVisible) {
                     val viewportStartOffset = lazyListState.layoutInfo.viewportStartOffset
                     val viewportEndOffset = lazyListState.layoutInfo.viewportEndOffset
                     val currentLineOffset = visibleItemsInfo.find { it.index == currentLineIndex }?.offset ?: 0
@@ -478,18 +497,42 @@ fun Lyrics(
                             else 0.5f
                         )
 
-                    Text(
-                        text = item.text,
-                        fontSize = 20.sp,
-                        color = textColor,
-                        textAlign = when (lyricsTextPosition) {
-                            LyricsPosition.LEFT -> TextAlign.Left
-                            LyricsPosition.CENTER -> TextAlign.Center
-                            LyricsPosition.RIGHT -> TextAlign.Right
-                        },
-                        fontWeight = FontWeight.Bold,
-                        modifier = itemModifier
-                    )
+                    Column(
+                        modifier = itemModifier,
+                        horizontalAlignment = when (lyricsTextPosition) {
+                            LyricsPosition.LEFT -> Alignment.Start
+                            LyricsPosition.CENTER -> Alignment.CenterHorizontally
+                            LyricsPosition.RIGHT -> Alignment.End
+                        }
+                    ) {
+                        Text(
+                            text = item.text,
+                            fontSize = 20.sp,
+                            color = textColor,
+                            textAlign = when (lyricsTextPosition) {
+                                LyricsPosition.LEFT -> TextAlign.Left
+                                LyricsPosition.CENTER -> TextAlign.Center
+                                LyricsPosition.RIGHT -> TextAlign.Right
+                            },
+                            fontWeight = FontWeight.Bold
+                        )
+                        // Show japanese romanized text if available
+                        val romanizedText by item.romanizedTextFlow.collectAsState()
+                        romanizedText?.let { romanized ->
+                            Text(
+                                text = romanized,
+                                fontSize = 16.sp,
+                                color = textColor.copy(alpha = 0.8f),
+                                textAlign = when (lyricsTextPosition) {
+                                    LyricsPosition.LEFT -> TextAlign.Left
+                                    LyricsPosition.CENTER -> TextAlign.Center
+                                    LyricsPosition.RIGHT -> TextAlign.Right
+                                },
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -736,7 +779,7 @@ fun Lyrics(
         )
         val textMeasurer = rememberTextMeasurer()
 
-        val calculatedFontSize = rememberAdjustedFontSize(
+        rememberAdjustedFontSize(
             text = lyricsText,
             maxWidth = previewAvailableWidth,
             maxHeight = previewAvailableHeight,

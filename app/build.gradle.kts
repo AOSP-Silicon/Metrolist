@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "com.metrolist.music"
-        minSdk = 21
+        minSdk = 26
         targetSdk = 36
         versionCode = 121
         versionName = "12.0.0"
@@ -97,24 +97,23 @@ android {
     }
 
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true
+        isCoreLibraryDesugaringEnabled = false
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
 
     kotlin {
         jvmToolchain(21)
-    }
-
-    kotlinOptions {
-        jvmTarget = "21"
-        freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            freeCompilerArgs.add("-Xcontext-receivers")
+        }
     }
 
     buildFeatures {
-         compose = true
-         buildConfig = true
-     }
+        compose = true
+        buildConfig = true
+    }
 
     dependenciesInfo {
         includeInApk = false
@@ -130,10 +129,13 @@ android {
     }
 
     packaging {
-         resources {
-             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-         }
-     }
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/CONTRIBUTORS.md"
+            excludes += "META-INF/LICENSE.md"
+        }
+    }
 }
 
 ksp {
@@ -175,6 +177,7 @@ dependencies {
     implementation(libs.squigglyslider)
 
     implementation(libs.room.runtime)
+    implementation(libs.kuromoji.ipadic)
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
 
